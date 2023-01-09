@@ -22,7 +22,7 @@ with grpc.secure_channel('api.pubsub.salesforce.com:7443', creds) as channel:
     # this block
     username = os.getenv('API_USER')
     password = os.environ.get('API_PASSWORD')
-    url = '{the appropriate login URL}'
+    url = os.environ.get('API_URL')
     headers = {'content-type': 'text/xml', 'SOAPAction': 'login'}
     xml = "<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' " + \
     "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " + \
