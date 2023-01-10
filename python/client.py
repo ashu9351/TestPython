@@ -20,9 +20,12 @@ with open(certifi.where(), 'rb') as f:
 with grpc.secure_channel('api.pubsub.salesforce.com:7443', creds) as channel:
     # All of the code in the rest of the tutorial will go inside
     # this block
-    username = os.getenv('API_USER')
-    password = os.environ.get('API_PASSWORD')
-    url = os.environ.get('API_URL')
+    #username = os.getenv('API_USER')
+    #password = os.environ.get('API_PASSWORD')
+    #url = os.environ.get('API_URL')
+    username = 'ashutoshexams@gmail.com' #os.getenv('API_USER')	
+    password = 'ashutosh9351aozWQvXaav1CPDQaHHgtU7pQy' #os.environ.get('API_PASSWORD')	
+    url = 'https://login.salesforce.com/services/Soap/u/55.0/'
     print(username);
     print(password);
     print(url);
