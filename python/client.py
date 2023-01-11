@@ -15,8 +15,8 @@ from authwrapper import AuthWrapper
 
 semaphore = threading.Semaphore(1)
 latest_replay_id = None
-global accesstoken #os.getenv('ACCESS_TOKEN')
-accesstoken = ''
+global accesstoken 
+accesstoken = os.getenv('ACCESS_TOKEN')
 #key 3MVG9ZL0ppGP5UrAP59A8.dNkSsWx54hRgtkftFHZh1bxEMSGF6kwnRNA8VheLBe2RHROd01KucH2QHHt5ggh
 #sec 22883FEE07FDBA0FD71F317F8A4821155253D7853C280B4302EA229A30B1DDEF
 
