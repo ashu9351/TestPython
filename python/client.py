@@ -91,12 +91,12 @@ def subscribe_to_channel():
             if isauthorized:
                 print ('>>>>>SUBS')
                 print (authmetadata)
-                connecttoapi();
+                connecttoapi(channel);
         else:
-            connecttoapi();
+            connecttoapi(channel);
 
-def connecttoapi():
-    
+def connecttoapi(channel):
+    stub = pb2_grpc.PubSubStub(channel)
     def fetchReqStream(topic):
         while True:
             semaphore.acquire()
