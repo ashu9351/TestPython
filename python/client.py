@@ -11,14 +11,18 @@ import time
 import certifi
 import json
 import os
+import redis
 from authwrapper import AuthWrapper
 
 semaphore = threading.Semaphore(1)
 latest_replay_id = None
-global accesstoken 
-accesstoken = os.getenv('ACCESS_TOKEN')
+
 #key 3MVG9ZL0ppGP5UrAP59A8.dNkSsWx54hRgtkftFHZh1bxEMSGF6kwnRNA8VheLBe2RHROd01KucH2QHHt5ggh
 #sec 22883FEE07FDBA0FD71F317F8A4821155253D7853C280B4302EA229A30B1DDEF
+pool = redis.ConnectionPool(host='red-cf00a2sgqg4cnpin55g0', port=6379, db=0)
+redis = redis.Redis(connection_pool=pool)
+global accesstoken 
+accesstoken = redis.get('ACCESS_TOKEN')
 
 def do_auth():
     username = os.getenv('API_USER')
@@ -57,15 +61,17 @@ def do_auth():
         response = AuthWrapper(res.json())
         print (response.access_token)
         print (response.instance_url)
-        global accesstoken
-        accesstoken = response.access_token;
+       
+        '''accesstoken = response.access_token;
         os.environ['ACCESS_TOKEN'] = response.access_token;
-        os.environ['REQUEST_URL'] = response.instance_url;
-        
+        os.environ['REQUEST_URL'] = response.instance_url;'''
+        redis.set('ACCESS_TOKEN', response.access_token)
+        redis.set('REQUEST_URL', response.instance_url)
+        value = redis.get('mykey')
         print('>>>>>>>AUTHORIZED>>>>>>>>');
         global authmetadata
-        authmetadata = (('accesstoken', os.getenv('ACCESS_TOKEN')),
-                        ('instanceurl', os.getenv('REQUEST_URL')),
+        authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
+                        ('instanceurl', redis.get('REQUEST_URL')),
                             ('tenantid', os.getenv('API_ORG'))) 
         return True
     else:
@@ -85,5 +91,6 @@ def subscribe_to_channel():
             if isauthorized:
                 print ('>>>>>SUBS')
                 print (authmetadata)
-   
-subscribe_to_channel(); 
+                print(os.environ)
+
+#subscribe_to_channel(); 
