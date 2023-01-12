@@ -94,9 +94,9 @@ def subscribe_to_channel():
 def connecttoapi(channel):
     stub = pb2_grpc.PubSubStub(channel)
     global authmetadata
-        authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
-                        ('instanceurl', redis.get('REQUEST_URL')),
-                            ('tenantid', os.getenv('API_ORG'))) 
+    authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
+                      ('instanceurl', redis.get('REQUEST_URL')),
+                        ('tenantid', os.getenv('API_ORG'))) 
     def fetchReqStream(topic):
         while True:
             semaphore.acquire()
