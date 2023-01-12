@@ -69,10 +69,7 @@ def do_auth():
         redis.set('REQUEST_URL', response.instance_url)
         value = redis.get('mykey')
         print('>>>>>>>AUTHORIZED>>>>>>>>');
-        global authmetadata
-        authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
-                        ('instanceurl', redis.get('REQUEST_URL')),
-                            ('tenantid', os.getenv('API_ORG'))) 
+        
         return True
     else:
         return False
@@ -90,13 +87,16 @@ def subscribe_to_channel():
             isauthorized = do_auth();
             if isauthorized:
                 print ('>>>>>SUBS')
-                print (authmetadata)
                 connecttoapi(channel);
         else:
             connecttoapi(channel);
 
 def connecttoapi(channel):
     stub = pb2_grpc.PubSubStub(channel)
+    global authmetadata
+        authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
+                        ('instanceurl', redis.get('REQUEST_URL')),
+                            ('tenantid', os.getenv('API_ORG'))) 
     def fetchReqStream(topic):
         while True:
             semaphore.acquire()
