@@ -93,4 +93,4 @@ def subscribe_to_channel():
                 print (authmetadata)
                 print(os.environ)
 
-#subscribe_to_channel(); 
+subscribe_to_channel(); 
