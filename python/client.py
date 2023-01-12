@@ -100,12 +100,12 @@ def subscribe_to_channel():
                             num_requested = 1)
 
                 def decode(schema, payload):
-                schema = avro.schema.parse(schema)
-                buf = io.BytesIO(payload)
-                decoder = avro.io.BinaryDecoder(buf)
-                reader = avro.io.DatumReader(schema)
-                ret = reader.read(decoder)
-                return ret
+                    schema = avro.schema.parse(schema)
+                    buf = io.BytesIO(payload)
+                    decoder = avro.io.BinaryDecoder(buf)
+                    reader = avro.io.DatumReader(schema)
+                    ret = reader.read(decoder)
+                    return ret
 
                 mysubtopic = "/data/AccountChangeEvent"
                 print('Subscribing to ' + mysubtopic)
