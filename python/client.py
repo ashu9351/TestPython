@@ -75,9 +75,7 @@ def do_auth():
         return False
     #do_auth ends here
 def subscribe_to_channel():
-    with open(certifi.where(), 'rb') as f:
-        creds = grpc.ssl_channel_credentials(f.read())
-    with grpc.secure_channel('api.pubsub.salesforce.com:7443', creds) as channel:
+    
         # All of the code in the rest of the tutorial will go inside
         # this block
         print ('>>>>>In subscribe')
@@ -87,60 +85,59 @@ def subscribe_to_channel():
             isauthorized = do_auth();
             if isauthorized:
                 print ('>>>>>SUBS')
-                connecttoapi(channel);
+                connecttoapi();
         else:
-            connecttoapi(channel);
+            connecttoapi();
 
-def connecttoapi(channel):
-    stub = pb2_grpc.PubSubStub(channel)
-    global authmetadata
-    print('access token before' , redis.get('ACCESS_TOKEN'))
-    print('request url before' , redis.get('REQUEST_URL'))
-    accesstokenstr = redis.get('ACCESS_TOKEN').decode('utf-8')
-    reqtokenstr = redis.get('REQUEST_URL').decode('utf-8')
-    print('access token after' , accesstokenstr)
-    print('request url after' , reqtokenstr)
+def connecttoapi():
+    with open(certifi.where(), 'rb') as f:
+        creds = grpc.ssl_channel_credentials(f.read())
+    with grpc.secure_channel('api.pubsub.salesforce.com:7443', creds) as channel:
+        stub = pb2_grpc.PubSubStub(channel)
+        global authmetadata
+        print('access token before' , redis.get('ACCESS_TOKEN'))
+        print('request url before' , redis.get('REQUEST_URL'))
+        accesstokenstr = redis.get('ACCESS_TOKEN').decode('utf-8')
+        reqtokenstr = redis.get('REQUEST_URL').decode('utf-8')
+        print('access token after' , accesstokenstr)
+        print('request url after' , reqtokenstr)
+        authmetadata = (('accesstoken', accesstokenstr),('instanceurl', reqtokenstr),('tenantid', os.getenv('API_ORG')))
+        def fetchReqStream(topic):
+            while True:
+                semaphore.acquire()
+                yield pb2.FetchRequest(
+                    topic_name = topic,
+                    replay_preset = pb2.ReplayPreset.LATEST,
+                    num_requested = 1)
 
+        def decode(schema, payload):
+            schema = avro.schema.parse(schema)
+            buf = io.BytesIO(payload)
+            decoder = avro.io.BinaryDecoder(buf)
+            reader = avro.io.DatumReader(schema)
+            ret = reader.read(decoder)
+            return ret
 
-    authmetadata = (('accesstoken', accesstokenstr),
-                      ('instanceurl', reqtokenstr),
-                        ('tenantid', os.getenv('API_ORG'))) 
-    def fetchReqStream(topic):
-        while True:
-            semaphore.acquire()
-            yield pb2.FetchRequest(
-                topic_name = topic,
-                replay_preset = pb2.ReplayPreset.LATEST,
-                num_requested = 1)
-
-    def decode(schema, payload):
-        schema = avro.schema.parse(schema)
-        buf = io.BytesIO(payload)
-        decoder = avro.io.BinaryDecoder(buf)
-        reader = avro.io.DatumReader(schema)
-        ret = reader.read(decoder)
-        return ret
-
-    mysubtopic = "/data/AccountChangeEvent"
-    print('Subscribing to ' + mysubtopic)
-    print(authmetadata)
-    substream = stub.Subscribe(fetchReqStream(mysubtopic),
-        metadata=authmetadata)
-    for event in substream:
-        if event.events:
-            semaphore.release()
-            print("Number of events received: ", len(event.events))
-            payloadbytes = event.events[0].event.payload
-            schemaid = event.events[0].event.schema_id
-            schema = stub.GetSchema(
-                    pb2.SchemaRequest(schema_id=schemaid),
-                    metadata=authmetadata).schema_json
-            decoded = decode(schema, payloadbytes)
-            print("Got an event!", json.dumps(decoded))
-        else:
-            print("[", time.strftime('%b %d, %Y %l:%M%p %Z'),
-            "] The subscription is active.")
-            latest_replay_id = event.latest_replay_id
+        mysubtopic = "/data/AccountChangeEvent"
+        print('Subscribing to ' + mysubtopic)
+        print(authmetadata)
+        substream = stub.Subscribe(fetchReqStream(mysubtopic),
+            metadata=authmetadata)
+        for event in substream:
+            if event.events:
+                semaphore.release()
+                print("Number of events received: ", len(event.events))
+                payloadbytes = event.events[0].event.payload
+                schemaid = event.events[0].event.schema_id
+                schema = stub.GetSchema(
+                        pb2.SchemaRequest(schema_id=schemaid),
+                        metadata=authmetadata).schema_json
+                decoded = decode(schema, payloadbytes)
+                print("Got an event!", json.dumps(decoded))
+            else:
+                print("[", time.strftime('%b %d, %Y %l:%M%p %Z'),
+                "] The subscription is active.")
+                latest_replay_id = event.latest_replay_id
 
 
 
