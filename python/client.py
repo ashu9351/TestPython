@@ -67,7 +67,7 @@ def do_auth():
         os.environ['REQUEST_URL'] = response.instance_url;'''
         redis.set('ACCESS_TOKEN', response.access_token)
         redis.set('REQUEST_URL', response.instance_url)
-        value = redis.get('mykey')
+        print('After redis persist',redis.get('ACCESS_TOKEN')) 
         print('>>>>>>>AUTHORIZED>>>>>>>>');
         
         return True
@@ -90,6 +90,7 @@ def subscribe_to_channel():
             connecttoapi();
 
 def connecttoapi():
+    do_auth();
     with open(certifi.where(), 'rb') as f:
         creds = grpc.ssl_channel_credentials(f.read())
     with grpc.secure_channel('api.pubsub.salesforce.com:7443', creds) as channel:
