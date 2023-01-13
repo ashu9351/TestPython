@@ -94,6 +94,14 @@ def subscribe_to_channel():
 def connecttoapi(channel):
     stub = pb2_grpc.PubSubStub(channel)
     global authmetadata
+    print('access token before' , redis.get('ACCESS_TOKEN'))
+    print('request url before' , redis.get('REQUEST_URL'))
+    accesstokenstr = redis.get('ACCESS_TOKEN').decode('utf-8')
+    reqtokenstr = redis.get('REQUEST_URL').decode('utf-8')
+    print('access token after' , accesstokenstr)
+    print('request url after' , reqtokenstr)
+
+
     authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
                       ('instanceurl', redis.get('REQUEST_URL')),
                         ('tenantid', os.getenv('API_ORG'))) 
@@ -115,8 +123,9 @@ def connecttoapi(channel):
 
     mysubtopic = "/data/AccountChangeEvent"
     print('Subscribing to ' + mysubtopic)
+    print(authmetadata)
     substream = stub.Subscribe(fetchReqStream(mysubtopic),
-            metadata=authmetadata)
+        metadata=authmetadata)
     for event in substream:
         if event.events:
             semaphore.release()
