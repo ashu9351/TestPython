@@ -102,8 +102,8 @@ def connecttoapi(channel):
     print('request url after' , reqtokenstr)
 
 
-    authmetadata = (('accesstoken', redis.get('ACCESS_TOKEN')),
-                      ('instanceurl', redis.get('REQUEST_URL')),
+    authmetadata = (('accesstoken', accesstokenstr),
+                      ('instanceurl', reqtokenstr),
                         ('tenantid', os.getenv('API_ORG'))) 
     def fetchReqStream(topic):
         while True:
